@@ -68,6 +68,7 @@ missingSwitch=4 # switch not provided
 invalidSyntax=5 # invalid syntax
 fileDoesNotExist=6 # file does not exist
 emptyFile=7 # 0 byte file provided as argument
+badpdf=8 # if a bad PDF is passed to the script and the user chooses to exit without processing it.
 
 # Other variables
 investigator=""
@@ -83,6 +84,7 @@ versions=1 # variable to hold # of versions found in a PDF (i.e., number of %%EO
 switch="" # initialize command line switch to blank
 RED='\033[0;31m' # red font
 YELLOW='\033[0;1;33m' # yellow font
+GREEN='\033[32;1;1m' # green font
 NOCOLOUR='\033[0;m' # no colour
 usage="Usage: $0 {-p true/false} -f <filename>\nor: $0 -v"
 priorVersion="" #This variable is the flag for deciding if the script should attempt to extract prior versions.
@@ -136,6 +138,16 @@ pdfImages() {
 	fi
 }
 
+checkPDF() {
+	testPDF="$(pdfinfo "$1" 2>/dev/null)"
+	if [ "$testPDF" == "" ]
+	then
+		pdfValidation="False"
+	else
+		pdfValidation="True"
+	fi
+	}
+
 while getopts ":f:p:v" opt; do
 
 	case $opt in
@@ -187,6 +199,18 @@ elif [ ! -s "$filename" ]; then
 	echo "Nothing to process."
 	echo -e $usage
 	exit $emptyFile
+fi
+
+checkPDF "$filename"
+
+if [ "$pdfValidation" == "False" ]
+then
+	echo -e "${YELLOW}Warning!${NOCOLOUR}\nThe PDF $filename does not appear to be a valid PDF."
+	read -p "Do you will wish to proceed (y/n)? " continue
+	if [ "$continue" == "n" ]
+	then
+		exit $badpdf
+	fi
 fi
 
 logfile="$filename.log"
@@ -243,7 +267,6 @@ else
 fi
 
 #pdfimages
-
 pdfImages "$filename" "3"
 
 #pdfsig
@@ -356,13 +379,14 @@ extension="${filename##*.}"
 v=1
 
 offsets=($(grep --only-matching --byte-offset --text "%%EOF" "$filename"| cut -d : -f 1))
-versions=${#offsets[@]}
+priorVersions=${#offsets[@]}
+priorVersions=$((priorVersions-1))
 
-if [ "$versions" == "1" ]; then
+if [ "$priorVersions" == "1" ]; then
 	echo "There are no previous versions of the PDF embedded in this pdf." | tee -a "$logfile"
 else
 	if ! [[ "$priorVersion" = "true"  ||  "$priorVersion" = "false" ]]; then # if the user did not provide a valid option for -p (or did not specify it)
-		echo -e "There are ${RED}$versions versions${NOCOLOUR} of this PDF based on the number of %%EOF signatures in it."
+		echo -e "There are ${GREEN}$priorVersions prior versions${NOCOLOUR} of this PDF based on the number of %%EOF signatures in it."
 		echo "The script can attempt to extract them with the caveat that a prior version may or may not be a properly formed PDF."
 		read -p "Do you want the script to attempt to extract all versions of this PDF (Y/N)? [Y] " priorVersion # default response is Y if user just hits ENTER
 	
@@ -375,36 +399,49 @@ else
 	if [ "$priorVersion" == "true" ];then # process prior versions
 		echo "Excluding the current version, there are $((versions-1)) prior versions in this PDF." | tee -a "$logfile"
 		echo "The script will extract each of them, assiging them a version number. Version 1 being the oldest version, and version $version being the current version" | tee -a "$logfile"
-		blankLine
 
 		for size in ${offsets[@]}; do
+		
+			if [ $v -le $priorVersions ]; then # if it's not the last version. Last version is redundant, as it's the original PDF passed to the script.
 
-			newfile="$filenamenoext version $v.$extension"
+				newfile="$filenamenoext version $v.$extension"
 
-			if [ "$v" == "1" ]; then
-				blocksize=$((size+6))
-			else
-				blocksize=$((size+7))
+				if [ "$v" == "1" ]; then
+					blocksize=$((size+6))
+				else
+					blocksize=$((size+7))
+				fi
+
+				blankLine
+				echo "executing: dd if=\"$filename\" of=\"$newfile\" bs=$blocksize count=1 status=noxfer 2\> \/dev\/null" | tee -a "$logfile"
+				echo "This will extract version $v of the pdf $filename, assigning it the new filename $newfile" | tee -a "$logfile"
+				echo ""
+
+				dd if="$filename" of="$newfile" bs=$blocksize count=1 status=noxfer 2> /dev/null
+
+				echo "executing: sha256sum\"$newfile\" >>\"$logfile\"" | tee -a "$logfile"
+				sha256sum "$newfile" >>"$logfile"
+
+				blankLine
+				
+				checkPDF "$newfile"
+				
+				if [ "$pdfValidation" == "True" ] # Valid PDF
+				then
+					echo -e "Prior ${GREEN}version $v${NOCOLOUR} of '$filename' appears to be a ${GREEN}valid PDF.${NOCOLOUR}"
+					echo -e "Prior version $v of '$filename' appears to be a valid PDF." >> "$logfile"
+				else # Not a valid PDF
+					echo -e "Prior ${YELLOW}version $v${NOCOLOUR} of '$filename' ${RED}does not appear to be a valid PDF.${NOCOLOUR}"
+					echo -e "Prior version $v of '$filename' does not appear to be a valid PDF." >> "$logfile"
+				fi
+				blankLine			
+				pdfImages "$newfile" "9.$v" 2>/dev/null # Attempt to extract images from the version. Even if not a valid PDF, attempting regardless.
+				
+				v=$((v+1))
 			fi
-
-			blankLine
-			echo "executing: dd if=\"$filename\" of=\"$newfile\" bs=$blocksize count=1 status=noxfer 2\> \/dev\/null" | tee -a "$logfile"
-			echo "This will extract version $v of the pdf $filename, assigning it the new filename $newfile" | tee -a "$logfile"
-			echo ""
-
-			dd if="$filename" of="$newfile" bs=$blocksize count=1 status=noxfer 2> /dev/null
-
-			echo "executing: sha256sum\"$newfile\" >>\"$logfile\"" | tee -a "$logfile"
-			sha256sum "$newfile" >>"$logfile"
-
-			blankLine
-
-			pdfImages "$newfile" "9.$v"
-
-			v=$((v+1))
 		done
 
-		echo -e "\n Extracting prior veresions of the PDF finished execution at $(date).">>"$logfile"
+		echo -e "\nExtracting prior versions of the PDF finished execution at $(date).">>"$logfile"
 
 		echo "executing: exiftool -a -G1 -s -ee -csv \"$filenamenoext version \"*\".$extension\" 2> /dev/null >> \"$filename - all versions - exif.csv" | tee -a "$logfile"
 
@@ -417,7 +454,7 @@ fi
 blankLine
 
 echo "executing: sort \"$allimages\" > \"$allimages\"" | tee -a "$logfile"
-echo -e "All images hashes are also found in: ${YELLOW}'$allimages'.${NOCOLOUR}"
+echo -e "All images hashes are also found in: ${GREEN}'$allimages'.${NOCOLOUR}"
 echo "All images hashes are also found in: $allimages.">>"$logfile"
 
 
@@ -425,6 +462,6 @@ sort "$allimages-unsorted.txt" > "$allimages.txt"
 
 
 echo -e "\n###############################################################"
-echo -e "Log file written to: ${YELLOW}'$logfile'.${NOCOLOUR}"
-echo -e "Script finshed at $(date).">>"$logfile"
+echo -e "Log file written to: ${GREEN}'$logfile'.${NOCOLOUR}"
+echo -e "Script finshed at $(date)." >> "$logfile"
 exit $commandsExecuted
