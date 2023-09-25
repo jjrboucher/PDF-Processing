@@ -383,7 +383,7 @@ priorVersions=${#offsets[@]}
 priorVersions=$((priorVersions-2))
 
 
-if [ "$priorVersions" == "1" ]; then
+if [ $priorVersions -le 1 ]; then
 	echo "There are no previous versions of the PDF embedded in this pdf." | tee -a "$logfile"
 else
 	if ! [[ "$priorVersion" = "true"  ||  "$priorVersion" = "false" ]]; then # if the user did not provide a valid option for -p (or did not specify it)
