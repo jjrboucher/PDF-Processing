@@ -2,7 +2,7 @@
 ###########################
 # Written by Jacques Boucher
 # jboucher@unicef.org
-scriptVersion="21 September 2023"
+scriptVersion="25 September 2023"
 # Tested on Kali Linux 2023.1 and Kali Linux on WSL.
 ##############################
 # Installing required binaries
@@ -380,13 +380,14 @@ v=1
 
 offsets=($(grep --only-matching --byte-offset --text "%%EOF" "$filename"| cut -d : -f 1))
 priorVersions=${#offsets[@]}
-priorVersions=$((priorVersions-1))
+priorVersions=$((priorVersions-2))
+
 
 if [ "$priorVersions" == "1" ]; then
 	echo "There are no previous versions of the PDF embedded in this pdf." | tee -a "$logfile"
 else
 	if ! [[ "$priorVersion" = "true"  ||  "$priorVersion" = "false" ]]; then # if the user did not provide a valid option for -p (or did not specify it)
-		echo -e "There are ${GREEN}$priorVersions prior versions${NOCOLOUR} of this PDF based on the number of %%EOF signatures in it."
+		echo -e "There are ${GREEN}$priorVersions prior versions${NOCOLOUR} of this PDF based on the number of %%EOF signatures in it.\n"
 		echo "The script can attempt to extract them with the caveat that a prior version may or may not be a properly formed PDF."
 		read -p "Do you want the script to attempt to extract all versions of this PDF (Y/N)? [Y] " priorVersion # default response is Y if user just hits ENTER
 	
@@ -397,20 +398,19 @@ else
 		fi
 	fi
 	if [ "$priorVersion" == "true" ];then # process prior versions
-		echo "Excluding the current version, there are $((versions-1)) prior versions in this PDF." | tee -a "$logfile"
-		echo "The script will extract each of them, assiging them a version number. Version 1 being the oldest version, and version $version being the current version" | tee -a "$logfile"
+		echo "Excluding the current version, there are $((priorVersions-1)) prior versions in this PDF." | tee -a "$logfile"
+		echo "The script will extract each of them, assiging them a version number. Version 1 being the oldest version, and version $priorVersions being the version prior to the current version." | tee -a "$logfile"
+
+		unset offsets[0] # removes the first element in the array, as it's a false positive.
 
 		for size in ${offsets[@]}; do
+		
 		
 			if [ $v -le $priorVersions ]; then # if it's not the last version. Last version is redundant, as it's the original PDF passed to the script.
 
 				newfile="$filenamenoext version $v.$extension"
 
-				if [ "$v" == "1" ]; then
-					blocksize=$((size+6))
-				else
-					blocksize=$((size+7))
-				fi
+				blocksize=$((size+7))
 
 				blankLine
 				echo "executing: dd if=\"$filename\" of=\"$newfile\" bs=$blocksize count=1 status=noxfer 2\> \/dev\/null" | tee -a "$logfile"
