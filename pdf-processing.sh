@@ -449,7 +449,7 @@ else
 
 		echo "executing: exiftool -a -G1 -s -ee -csv \"$filenamenoext version \"*\".$extension\" 2> /dev/null >> \"$filename - all versions - exif.csv" | tee -a "$logfile"
 
-		exiftool -a -G1 -s -ee -csv "$filenamenoext version "*".$extension" 2> /dev/null >> "$filename - all versions - exif.csv"
+		exiftool -a -G1 -s -ee -csv "$filenamenoext"*".$extension" 2> /dev/null >> "$filename - all versions - exif.csv"
 	fi
 fi
 
