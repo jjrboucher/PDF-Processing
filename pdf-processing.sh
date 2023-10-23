@@ -107,7 +107,7 @@ commandNotFound () { #command not found. Logging same.
 	echo ""
 	blankLine
 	echo "######## WARNING! ########" >> "$logfile"
-	echo "$1 not found. Skippipng this step." >> "$logfile"
+	echo "$1 not found. Skipping this step." >> "$logfile"
 	echo "##########################" >> "$logfile"
 	blankLine
 }
