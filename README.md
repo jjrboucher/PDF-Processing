@@ -21,6 +21,7 @@ sudo apt install xpdf
 sudo apt install pdf-parser
 sudo apt install poppler-utils
 sudo apt install pdfid
+(for the pdf-triage script, you only need exiftool and xpdf from the above, plus the "file" command: sudo apt install file)
 ```
 
 The script will execute the following processes against the PDF:
