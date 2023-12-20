@@ -1,4 +1,4 @@
-# PDF-Processing
+# pdf-processing.sh
 Script to process PDF files
 
 Command line options:
@@ -21,14 +21,8 @@ sudo apt install xpdf
 sudo apt install pdf-parser
 sudo apt install poppler-utils
 sudo apt install pdfid
-```
-#pdf-triage.sh
-Note: 
-For the pdf-triage.sh script, you only need exiftool and xpdf from the above, plus the "file" command: 
-```
-sudo apt install file
-```
 
+```
 The script will execute the following processes against the PDF:
 1. pdfinfo
 2. exiftool
@@ -39,6 +33,12 @@ The script will execute the following processes against the PDF:
 7. pdffonts
 8. pdfdetach
 
+# pdf-triage.sh
+Note: 
+For the pdf-triage.sh script, you only need exiftool and xpdf from the above, plus the "file" command: 
+```
+sudo apt install file
+```
 The script will also attempt to carve out prior versions of the PDF by looking for %%EOF markers in the PDF. When you edit a PDF, the edits are added after the %%EOF, and a new %%EOF is added at the new file ending. This means there is an opportunity to extract prior versions of a PDF. It's not guaranteed, as there are factors that can cause prior versions to be invalid PDFs. It will depend on whether the tool that was used to edit the PDF is compliant with the PDF standard, whether there was some compressing (cleaning up) done by removing an earlier edit (but the %%EOF remains allowing you to at least know a prior version existed).
 
 # pdf-metadata.sh
