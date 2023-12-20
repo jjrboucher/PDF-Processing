@@ -33,13 +33,13 @@ The script will execute the following processes against the PDF:
 7. pdffonts
 8. pdfdetach
 
+The script will also attempt to carve out prior versions of the PDF by looking for %%EOF markers in the PDF. When you edit a PDF, the edits are added after the %%EOF, and a new %%EOF is added at the new file ending. This means there is an opportunity to extract prior versions of a PDF. It's not guaranteed, as there are factors that can cause prior versions to be invalid PDFs. It will depend on whether the tool that was used to edit the PDF is compliant with the PDF standard, whether there was some compressing (cleaning up) done by removing an earlier edit (but the %%EOF remains allowing you to at least know a prior version existed).
+
 # pdf-triage.sh
 Note: 
 For the pdf-triage.sh script, you only need exiftool and xpdf from the above, plus the "file" command: 
 ```
 sudo apt install file
 ```
-The script will also attempt to carve out prior versions of the PDF by looking for %%EOF markers in the PDF. When you edit a PDF, the edits are added after the %%EOF, and a new %%EOF is added at the new file ending. This means there is an opportunity to extract prior versions of a PDF. It's not guaranteed, as there are factors that can cause prior versions to be invalid PDFs. It will depend on whether the tool that was used to edit the PDF is compliant with the PDF standard, whether there was some compressing (cleaning up) done by removing an earlier edit (but the %%EOF remains allowing you to at least know a prior version existed).
-
 # pdf-metadata.sh
 The pdf-metadata.sh script is really just packaging the exiftool command for the convenience of those who are unfamiliar with exiftool and its switches. You can run the exiftool command alone within the script and yield the same results (of course you need to provide a proper outoupt file in that case rather than the variable name used in the script).
