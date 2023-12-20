@@ -37,9 +37,16 @@ The script will also attempt to carve out prior versions of the PDF by looking f
 
 # pdf-triage.sh
 Note: 
-For the pdf-triage.sh script, you only need exiftool and xpdf from the above, plus the "file" command: 
+For the pdf-triage.sh script, you only need exiftool and xpdf from the above, plus the "file" command. If you've already installed exiftool and xpdf for the above script, you only need to install the file command here.
 ```
+sudo apt install exiftool
+sudo apt install xpdf
 sudo apt install file
 ```
 # pdf-metadata.sh
 The pdf-metadata.sh script is really just packaging the exiftool command for the convenience of those who are unfamiliar with exiftool and its switches. You can run the exiftool command alone within the script and yield the same results (of course you need to provide a proper outoupt file in that case rather than the variable name used in the script).
+
+For the pdf-metadata.sh script, you only need exiftool installed. If you already installed it for either of the above two scripts, you don't need to install it again here.
+```
+sudo apt install exiftool
+```
