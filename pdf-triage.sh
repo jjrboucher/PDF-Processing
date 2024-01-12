@@ -7,7 +7,7 @@
 #
 # You can modify the script to extract other fields if they are of interest to you.
 
-output_file="pdf-triage.csv"
+output_file="pdf-triage.tsv"
 
 if test -f $output_file; then
 	echo "$output_file already exists. Rename or move and re-run the script."
@@ -18,7 +18,7 @@ OIFS="$IFS" # Original Field Separator
 IFS=$'\n' # New field separator = new line
 
 a=$(find . -iname "*.pdf") # Find all PDFs recursively from current folder
-echo "file", "CreateDate","Modify Date", "# of images", "Author", "# of versions", "hash" >$output_file # write headers to csv
+echo "file	Create Date	Modify Date	# of images	Author	# of fonts	# of versions	hash" >$output_file # write headers to csv
 for i in $a # loop through each item
 do
 	image_count=$(pdfimages -list $i | wc -l) # get only # of lines in output (# of images)
@@ -26,10 +26,12 @@ do
 	author=$(exiftool -S -s -author $i) # get author of the document without the tag name
 	create_date=$(exiftool -S -s -CreateDate $i)
 	modify_date=$(exiftool -S -s -ModifyDate $i)
-	hash=$(md5sum $i)
+	font_count=$(pdffonts $i | wc -l) # get the # of fonts - but includes 2 additional lines for header.
+	font_count=$((font_count-2)) # remove the headers
+	hash=$(md5sum $i | cut -d " " -f1)
 	offsets=($(grep --only-matching --byte-offset --text "%%EOF" "$i"| cut -d : -f 1)) # find all %%EOF instances in the PDF
 	version_count=${#offsets[@]} # Number of instances of %%EOF
-	echo $i, $create_date, $modify_date, $image_count, $author, $version_count, $hash >>$output_file # append results to csv file in current directory
+	echo "$i	$create_date	$modify_date	$image_count	$author	$font_count	$version_count	$hash" >>$output_file # append results to csv file in current directory
 done
 
 echo "Results can be found in $output_file."
