@@ -6,6 +6,7 @@
 # review for possible manipulation by a subject.
 #
 # You can modify the script to extract other fields if they are of interest to you.
+# Updated 24 January 2024
 
 output_file="pdf-triage.tsv"
 
@@ -29,8 +30,13 @@ do
 	font_count=$(pdffonts $i | wc -l) # get the # of fonts - but includes 2 additional lines for header.
 	font_count=$((font_count-2)) # remove the headers
 	hash=$(md5sum $i | cut -d " " -f1)
+	
 	offsets=($(grep --only-matching --byte-offset --text "%%EOF" "$i"| cut -d : -f 1)) # find all %%EOF instances in the PDF
+	if [ ${offsets[0]} -lt 600 ]; then
+		unset offsets[0] # removes the first element in the array, as it's a false positive.
+	fi
 	version_count=${#offsets[@]} # Number of instances of %%EOF
+	
 	echo "$i	$create_date	$modify_date	$image_count	$author	$font_count	$version_count	$hash" >>$output_file # append results to csv file in current directory
 done
 
