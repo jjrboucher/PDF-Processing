@@ -2,7 +2,11 @@
 ###########################
 # Written by Jacques Boucher
 # jboucher@unicef.org
+<<<<<<< HEAD
 scriptVersion="8 March 2024"
+=======
+scriptVersion="24 January 2024"
+>>>>>>> e642ea66fe48e3c9fa241197cf1abcace912d08f
 # Tested on Kali Linux 2023.1 and Kali Linux on WSL.
 ##############################
 # Installing required binaries
@@ -385,7 +389,7 @@ if [ ${offsets[0]} -lt 600 ]; then
 fi
 
 priorVersions=${#offsets[@]}
-priorVersions=$((priorVersions-1))
+priorVersions=$((priorVersions-1))  # reduces the count by 1, as the current version does not count as a prior version, but will be in the array.
 
 if [ $priorVersions -lt 1 ]; then
 	echo "There are no previous versions of the PDF embedded in this pdf." | tee -a "$logfile"
