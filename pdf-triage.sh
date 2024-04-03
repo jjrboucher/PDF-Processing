@@ -30,11 +30,22 @@ do
 	font_count=$(pdffonts $i | wc -l) # get the # of fonts - but includes 2 additional lines for header.
 	font_count=$((font_count-2)) # remove the headers
 	hash=$(md5sum $i | cut -d " " -f1)
+<<<<<<< HEAD
+=======
+	
+>>>>>>> e642ea66fe48e3c9fa241197cf1abcace912d08f
 	offsets=($(grep --only-matching --byte-offset --text "%%EOF" "$i"| cut -d : -f 1)) # find all %%EOF instances in the PDF
-	version_count=${#offsets[@]} # Number of instances of %%EOF
 	if [ ${offsets[0]} -lt 600 ]; then
 		unset offsets[0] # removes the first element in the array, as it's a false positive.
 	fi
+	version_count=${#offsets[@]} # Number of instances of %%EOF
+<<<<<<< HEAD
+	if [ ${offsets[0]} -lt 600 ]; then
+		unset offsets[0] # removes the first element in the array, as it's a false positive.
+	fi
+=======
+	
+>>>>>>> e642ea66fe48e3c9fa241197cf1abcace912d08f
 	echo "$i	$create_date	$modify_date	$image_count	$author	$font_count	$version_count	$hash" >>$output_file # append results to csv file in current directory
 done
 
