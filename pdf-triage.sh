@@ -6,7 +6,7 @@
 # review for possible manipulation by a subject.
 #
 # You can modify the script to extract other fields if they are of interest to you.
-# Updated 24 January 2024
+# Updated 11 June 2024
 
 output_file="pdf-triage.tsv"
 
@@ -19,7 +19,7 @@ OIFS="$IFS" # Original Field Separator
 IFS=$'\n' # New field separator = new line
 
 a=$(find . -iname "*.pdf") # Find all PDFs recursively from current folder
-echo "file	Create Date	Modify Date	# of images	Author	# of fonts	# of versions	hash" >$output_file # write headers to csv
+echo "File	Create Date	Modify Date	# of images	Author	Producer	# of fonts	# of versions	hash" >$output_file # write headers to csv
 for i in $a # loop through each item
 do
 	image_count=$(pdfimages -list $i | wc -l) # get only # of lines in output (# of images)
@@ -27,26 +27,18 @@ do
 	author=$(exiftool -S -s -author $i) # get author of the document without the tag name
 	create_date=$(exiftool -S -s -CreateDate $i)
 	modify_date=$(exiftool -S -s -ModifyDate $i)
+	producer=$(exiftool -S -s -Producer $i)
 	font_count=$(pdffonts $i | wc -l) # get the # of fonts - but includes 2 additional lines for header.
 	font_count=$((font_count-2)) # remove the headers
 	hash=$(md5sum $i | cut -d " " -f1)
-<<<<<<< HEAD
-=======
-	
->>>>>>> e642ea66fe48e3c9fa241197cf1abcace912d08f
+
 	offsets=($(grep --only-matching --byte-offset --text "%%EOF" "$i"| cut -d : -f 1)) # find all %%EOF instances in the PDF
 	if [ ${offsets[0]} -lt 600 ]; then
 		unset offsets[0] # removes the first element in the array, as it's a false positive.
 	fi
 	version_count=${#offsets[@]} # Number of instances of %%EOF
-<<<<<<< HEAD
-	if [ ${offsets[0]} -lt 600 ]; then
-		unset offsets[0] # removes the first element in the array, as it's a false positive.
-	fi
-=======
-	
->>>>>>> e642ea66fe48e3c9fa241197cf1abcace912d08f
-	echo "$i	$create_date	$modify_date	$image_count	$author	$font_count	$version_count	$hash" >>$output_file # append results to csv file in current directory
+
+	echo "$i	$create_date	$modify_date	$image_count	$author	$producer	$font_count	$version_count	$hash" >>$output_file # append results to csv file in current directory
 done
 
 echo "Results can be found in $output_file."
