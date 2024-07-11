@@ -2,11 +2,9 @@
 ###########################
 # Written by Jacques Boucher
 # jboucher@unicef.org
-<<<<<<< HEAD
+
 scriptVersion="8 March 2024"
-=======
-scriptVersion="24 January 2024"
->>>>>>> e642ea66fe48e3c9fa241197cf1abcace912d08f
+
 # Tested on Kali Linux 2023.1 and Kali Linux on WSL.
 ##############################
 # Installing required binaries
