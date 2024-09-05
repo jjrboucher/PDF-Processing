@@ -5,7 +5,10 @@ Script is still being worked on. I need to add an output option. Currently, it w
 
 This script was created out of the necessity to extract prior versions out of multiple PDFs. Rather than running the other script multiple times, pointing to a new file each time, this script will allow me to process those multiple PDFs in a single command.
 
-If youare going to use this script, keep in mind that it is still being tested, and I will be adding an output command line parameter in the coming days hopefully. And I'll update this at that time with examples of syntax you can use.
+If you are going to use this script, keep in mind that it is still being tested, and I will be adding an output command line parameter in the coming days hopefully. And I'll update this at that time with examples of syntax you can use.
+
+For now, an example would be to navivate to your Documents folder with Kali WSL for example, and run the following (assuming your script is in your user home folder):
+~/recursive-pdf-processing.sh -d 
 
 # pdf-processing.sh
 Script to process a PDF file
