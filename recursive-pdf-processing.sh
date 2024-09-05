@@ -173,9 +173,8 @@ checkPDF() {
 	}
 
 while getopts ":d:f:p:rv" opt; do
-
 	case $opt in
-		-d)
+		d)
 			switch=$opt
 			folder="$OPTARG"
 			if [ -z "$folder" ]; then
@@ -185,9 +184,8 @@ while getopts ":d:f:p:rv" opt; do
 				IFS="$OIFS" # restore IFS to original
 				exit $noFolder
 			fi
-			outputFolder="report_$currentDateTime"
 			;;
-		-f)
+		f)
 			switch=$opt
 			filename="$OPTARG"
 			if [ ! -z "$filename" ] && [ ! -z "$folder" ]; then
@@ -212,9 +210,8 @@ while getopts ":d:f:p:rv" opt; do
 				IFS="$OIFS" # restore IFS to original
 				exit $emptyFile
 			fi
-			outputFolder="report_$currentDateTime"
 			;;
-		-v)
+		v)
 			echo "$0 version: $scriptVersion"
 			IFS="$OIFS" # restore IFS to original
 			exit
@@ -242,6 +239,8 @@ while getopts ":d:f:p:rv" opt; do
 			;;
 	esac
 done
+
+outputFolder="report_$currentDateTime"
 
 if [ -z "$switch" ]; then #switch is still blank, thus not provided
 	echo "Did not provide the required switch."	
