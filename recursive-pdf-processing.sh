@@ -190,8 +190,6 @@ while getopts ":d:f:p:rv" opt; do
 		-f)
 			switch=$opt
 			filename="$OPTARG"
-			echo "$filename"
-			exit
 			if [ ! -z "$filename" ] && [ ! -z "$folder" ]; then
 				echo -e "You provided ${RED}both${NOCOLOUR} the file (-f) and directory (-d) switches."
 				echo -e "Please provide ${GREEN}one or the other${NOCOLOUR}, but ${RED}not both.${NOCOLOUR}"
