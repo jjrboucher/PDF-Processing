@@ -1,5 +1,14 @@
+# recursive-pdf-processing.sh
+Script to process a single PDF file, all PDF files in a folder, or all PDF files in a folder, recursively.
+
+Script is still being worked on. I need to add an output option. Currently, it will output to a new directory based on where the script is run. This can result in unintended loop if the output folder resides within the recursive folder you have chosen to process. To avoid this, you can navigate to a location where you want an output folder to be created (will be unique as it uses the timestamp as part of the name), and using the -d to select the directory, select a directory located elsewhere. The ultimate purpose of this script would be to be able to mount an image file with the image mounter of your choice, and point the script to somewhere within that hierarchy (e.g., a user folder) to parse all PDFs within it.
+
+This script was created out of the necessity to extract prior versions out of multiple PDFs. Rather than running the other script multiple times, pointing to a new file each time, this script will allow me to process those multiple PDFs in a single command.
+
+If youare going to use this script, keep in mind that it is still being tested, and I will be adding an output command line parameter in the coming days hopefully. And I'll update this at that time with examples of syntax you can use.
+
 # pdf-processing.sh
-Script to process PDF files
+Script to process a PDF file
 
 Command line options:
 
