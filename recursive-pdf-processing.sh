@@ -2,7 +2,7 @@
 ###########################
 # Written by Jacques Boucher
 # jboucher@unicef.org
-scriptVersion="5 September 2024"
+scriptVersion="9 September 2024"
 # Tested on Kali Linux 2023.1 and Kali Linux on WSL.
 ##############################
 # Installing required binaries
@@ -78,6 +78,7 @@ caseNumber=""
 currentDateTime=$(date +%d-%m-%YT%H%M%S)
 directory=0 # set default to false, not parsing a directory
 executionFolder=$(pwd)
+extractedPDF=""  # variable used for checkPDF function
 filename="" # initialize filename to process to blank
 filenamenoext="" # filename without the extension
 folder="" # folder to parse
@@ -157,7 +158,9 @@ pdfImages() {
 checkPDF() {
 	processThisPDF="y" # defaults to yes
 	testPDF="$(pdfinfo "$1" 2>/dev/null)"
-	if [ "$testPDF" == "" ]; then
+	extractedPDF="$2"  # Used to pass a flag if this is an extracted PDF. If True, it doesn't return the same prompt.
+
+	if [ "$testPDF" == "" ]; then  # tests the output of the pdfinfo command above. If empty, it's not a valid PDF.
 		pdfValidation="False"
 	else
 		pdfValidation="True"
@@ -166,8 +169,10 @@ checkPDF() {
 	if [ "$pdfValidation" == "False" ]; then
 		echo -e "${YELLOW}Warning!${NOCOLOUR}\nThe PDF $1 does not appear to be a valid PDF."
 		echo -e "According to pdfinfo, ${1} does not appear to be a valid PDF." >> "$logfile"
-		read -p "Do you still wish to proceed (y/n)? " processThisPDF
-		processThisPDF=$(echo $processThisPDF | tr '[:upper:]' '[:lower:]')
+		if [ "$extractedPDF" != "True" ]; then
+			read -p "Do you still wish to proceed (y/n)? " processThisPDF
+			processThisPDF=$(echo $processThisPDF | tr '[:upper:]' '[:lower:]')
+		fi
 	fi
 	}
 
@@ -258,6 +263,7 @@ if [ ! -z $folder ]; then
 	fi
 fi
 
+
 mkdir $outputFolder
 
 logfile="$outputFolder/processing_results.log"
@@ -293,7 +299,7 @@ for fileToProcess in $filename # loop through each file
 	echo "sha256 hash: $(sha256sum "$fileToProcess" | cut -d " " -f1)" >> "$logfile"
 	blankLine
 	
-	checkPDF "$fileToProcess"
+	checkPDF "$fileToProcess" "False"  # not an extracted PDF
 
 	if [ "$pdfValidation" == "False" ]; then
 		if [ "$processThisPDF" != "y" ]; then
@@ -513,12 +519,7 @@ for fileToProcess in $filename # loop through each file
 
 					blankLine
 					
-					checkPDF "$newfile"
-					
-					if [ "pdfValidation" == "False" ] && [ "processThisPDF" != "y" ]; then
-						echo "User opted to not process \"$newfile\" as it does not appear to be a valid PDF." >> "$logfile"
-						continue # skip out of the loop
-					fi
+					checkPDF "$newfile" "True" # passes second parameter to the function alerting that it's an extracted PDF.
 					
 					if [ "$pdfValidation" == "True" ] # Valid PDF
 					then
