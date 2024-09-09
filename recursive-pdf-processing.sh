@@ -99,7 +99,6 @@ priorVersion="" #This variable is the flag for deciding if the script should att
 OIFS="$IFS" # Original Field Separator
 IFS=$'\n' # New field separator = new line
 
-
 hashMark() { # function to write section header to the log file.
 	echo -e "######################### $1 #############################" >>"$logfile"
 }
