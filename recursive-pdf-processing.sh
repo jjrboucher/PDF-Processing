@@ -2,7 +2,7 @@
 ###########################
 # Written by Jacques Boucher
 # jboucher@unicef.org
-scriptVersion="9 September 2024"
+scriptVersion="3 October 2024"
 # Tested on Kali Linux 2023.1 and Kali Linux on WSL.
 ##############################
 # Installing required binaries
@@ -78,7 +78,6 @@ caseNumber=""
 currentDateTime=$(date +%d-%m-%YT%H%M%S)
 directory=0 # set default to false, not parsing a directory
 executionFolder=$(pwd)
-extractedPDF=""  # variable used for checkPDF function
 filename="" # initialize filename to process to blank
 filenamenoext="" # filename without the extension
 folder="" # folder to parse
@@ -95,10 +94,11 @@ RED='\033[0;31m' # red font
 YELLOW='\033[0;1;33m' # yellow font
 GREEN='\033[32;1;1m' # green font
 NOCOLOUR='\033[0;m' # no colour
-usage="Usage: $0 {-f <filename>} {-p} {-d <directory>} {-r}\nor: $0 -v"
+usage="Usage: $0 {-f <filename>} {-p TRUE/FALSE} {-d <directory>} {-r}\nor: $0 -v"
 priorVersion="" #This variable is the flag for deciding if the script should attempt to extract prior versions.
 OIFS="$IFS" # Original Field Separator
 IFS=$'\n' # New field separator = new line
+
 
 hashMark() { # function to write section header to the log file.
 	echo -e "######################### $1 #############################" >>"$logfile"
@@ -158,9 +158,7 @@ pdfImages() {
 checkPDF() {
 	processThisPDF="y" # defaults to yes
 	testPDF="$(pdfinfo "$1" 2>/dev/null)"
-	extractedPDF="$2"  # Used to pass a flag if this is an extracted PDF. If True, it doesn't return the same prompt.
-
-	if [ "$testPDF" == "" ]; then  # tests the output of the pdfinfo command above. If empty, it's not a valid PDF.
+	if [ "$testPDF" == "" ]; then
 		pdfValidation="False"
 	else
 		pdfValidation="True"
@@ -169,10 +167,8 @@ checkPDF() {
 	if [ "$pdfValidation" == "False" ]; then
 		echo -e "${YELLOW}Warning!${NOCOLOUR}\nThe PDF $1 does not appear to be a valid PDF."
 		echo -e "According to pdfinfo, ${1} does not appear to be a valid PDF." >> "$logfile"
-		if [ "$extractedPDF" != "True" ]; then
-			read -p "Do you still wish to proceed (y/n)? " processThisPDF
-			processThisPDF=$(echo $processThisPDF | tr '[:upper:]' '[:lower:]')
-		fi
+		read -p "Do you still wish to proceed (y/n)? " processThisPDF
+		processThisPDF=$(echo $processThisPDF | tr '[:upper:]' '[:lower:]')
 	fi
 	}
 
@@ -263,7 +259,6 @@ if [ ! -z $folder ]; then
 	fi
 fi
 
-
 mkdir $outputFolder
 
 logfile="$outputFolder/processing_results.log"
@@ -299,7 +294,7 @@ for fileToProcess in $filename # loop through each file
 	echo "sha256 hash: $(sha256sum "$fileToProcess" | cut -d " " -f1)" >> "$logfile"
 	blankLine
 	
-	checkPDF "$fileToProcess" "False"  # not an extracted PDF
+	checkPDF "$fileToProcess"
 
 	if [ "$pdfValidation" == "False" ]; then
 		if [ "$processThisPDF" != "y" ]; then
@@ -519,7 +514,12 @@ for fileToProcess in $filename # loop through each file
 
 					blankLine
 					
-					checkPDF "$newfile" "True" # passes second parameter to the function alerting that it's an extracted PDF.
+					checkPDF "$newfile"
+					
+					if [ "pdfValidation" == "False" ] && [ "processThisPDF" != "y" ]; then
+						echo "User opted to not process \"$newfile\" as it does not appear to be a valid PDF." >> "$logfile"
+						continue # skip out of the loop
+					fi
 					
 					if [ "$pdfValidation" == "True" ] # Valid PDF
 					then
@@ -539,8 +539,10 @@ for fileToProcess in $filename # loop through each file
 			echo -e "\nExtracting prior versions of the PDF finished execution at $(date).">>"$logfile"
 
 			echo "executing: exiftool -a -G1 -s -ee -csv \"$fileToProcess\" \"$fileFolder/$filenamenoext version *.$extension\" 2> /dev/null >> \"$fileFolder/${fileToProcess##*/} - all versions - exif.csv" | tee -a "$logfile"
-
-			exiftool -a -G1 -s -ee -csv $fileToProcess $fileFolder/$filenamenoext*.$extension 2> /dev/null >> "$fileFolder/${fileToProcess##*/} - all versions - exif.csv"
+			echo "filetoprocess: $fileToProcess"
+			allPriorVersions="$fileFolder/$filenamenoext version"
+			echo "allPriorVersions: $allPriorVersions"
+			exiftool -a -G1 -s -ee -csv "$fileToProcess" "$allPriorVersions"*.$extension 2> /dev/null >> "$fileFolder/${fileToProcess##*/} - all versions - exif.csv"
 	
 		fi
 	fi
