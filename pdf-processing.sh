@@ -130,6 +130,7 @@ pdfImages() {
 		echo "Which will extract the following images:" | tee -a "$logfile"
 		pdfimages -list "$1" | tee -a "$logfile"
 		pdfimages -all "$1" "$pdfimagesRoot"
+		pdfimages -png "$1" "$pdfimagesRoot-png-format"  # also export as JPG for ease of viewing, as .ccitt not easily viewable
 		echo -e "\npdfimages finished execution at $(date).\nExtracted images saved to '$pdfimagesRoot-###.{extension}'.">>"$logfile"
 		echo "executing: sha256sum \"$pdfimagesRoot\"-*.*" | tee -a "$logfile"
 		sha256sum "$pdfimagesRoot"-*.* | tee -a "$allimages-unsorted.txt" >> "$logfile"
