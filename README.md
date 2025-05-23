@@ -76,3 +76,20 @@ For the pdf-metadata.sh script, you only need exiftool installed. If you already
 ```
 sudo apt install exiftool
 ```
+# hash_all_images.sh
+This script is useful to extract images from PDFs in a folder and save it to a text file. Images are deleted after they are hashed, as the purpose of this script is not to extract all images and preserve them. The other scripts are used for that. This is a way to look for embedded images from various PDFs that share the same hash value.
+
+Images in different PDFs with the same hash can be normal (e.g., an image of a stamp or signature is used to add to a document).
+
+But if you have several PDFs where the stamp is a physical stamp that is stamped on a printed document and then scanned to PDF, then they would not have the same hash value. If they do, that contradicts the statement that they are unique scans.
+
+The script could be modified to use the find command with the recursive option instead of a simple "ls" command. Change the following
+$(ls *.pdf)
+to
+find -iname "*.pdf"
+
+Doing the above would run a recursive search for PDF files from the location where you run the find command. So you'd need to navigate to the correct path before running it.
+
+Also, if you want to retain images as well as hash them, you could comment out (or delete) the two "rm -f" commands
+
+In a future release, I might add command line arguments to allow you to select that without needing to edit the script. But for now, this does what I need (minimum viable product).
