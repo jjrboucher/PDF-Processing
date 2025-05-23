@@ -3,7 +3,7 @@ IFS=$'\n' # New field separator = new line
 ORIGINAL_GLOB=$(shopt -p nocaseglob)
 shopt -s nocaseglob # to make the ls command case insensitive
 
-hashfile="hashes($(date -u +%a_%d-%b-%y_%kh%Mm%Ss)).csv"  # create the hash file using the UTC date to make it unique
+hashfile="hashes($(date -u +%a_%d-%b-%y_%kh%Mm%Ss_UTC)).csv"  # create the hash file using the UTC date to make it unique
 
 for pdf in $(ls *.pdf); do # for all; PDFs in this folder
 	echo "extracting images from $pdf"
