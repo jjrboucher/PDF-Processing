@@ -1,3 +1,8 @@
+# Updated application
+This repository can still be used to process PDFs, but I likely won't be doing any further development of this one. I created a new application (and a course) for PDF forensics and that repository is now public. I recommend you have a look at that solution for your PDF forensic needs.
+
+https://github.com/jjrboucher/PDF-Forensics
+
 # recursive-pdf-processing.sh
 Script to process a single PDF file, all PDF files in a folder, or all PDF files in a folder, recursively.
 
